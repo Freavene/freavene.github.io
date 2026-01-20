@@ -1,47 +1,248 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Mon Site GitHub</title>
+    <title>USDA Meal Planner</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #222; /* Fond sombre */
-            color: white; /* Texte blanc */
-            text-align: center;
-            padding-top: 50px;
-        }
-        .boite {
-            border: 2px solid #4CAF50; /* Bordure verte */
-            padding: 20px;
-            display: inline-block;
-            border-radius: 10px;
-            background-color: #333;
-        }
-        h1 { color: #4CAF50; }
-        button {
-            padding: 10px 20px;
-            background-color: #f44336; /* Rouge */
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-size: 18px;
-            border-radius: 5px;
-        }
-        button:hover { background-color: #d32f2f; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f5f7fa; padding: 20px; color: #333; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        
+        h1 { text-align: center; color: #005a87; } /* USDA Blue */
+
+        /* SEARCH SECTION */
+        .search-box { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: flex; gap: 10px; }
+        input { flex: 1; padding: 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 16px; }
+        button { background: #005a87; color: white; border: none; padding: 12px 20px; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        button:hover { background: #004466; }
+
+        /* SEARCH RESULTS (The List) */
+        #searchResults { margin-top: 10px; display: none; background: white; border: 1px solid #ddd; max-height: 200px; overflow-y: auto; border-radius: 4px; }
+        .result-item { padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; }
+        .result-item:hover { background-color: #eef7ff; }
+
+        /* TABLE */
+        .table-container { margin-top: 30px; overflow-x: auto; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        table { width: 100%; border-collapse: collapse; min-width: 1200px; }
+        th { background: #005a87; color: white; padding: 12px; text-align: left; font-size: 14px; }
+        td { padding: 10px; border-bottom: 1px solid #eee; font-size: 14px; }
+        
+        .totals { background: #333; color: white; font-weight: bold; }
+        .totals td { border: none; }
+
+        .loading { text-align: center; margin: 10px; font-style: italic; color: #666; display: none; }
+        .delete-btn { color: red; background: none; border: none; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <div class="boite">
-        <h1>Site en direct de GitHub !</h1>
-        <p>J'ai créé cette page directement sur le site web.</p>
-        <p>Je suis sur Chromebook et tout fonctionne.</p>
-        
-        <img src="https://media.giphy.com/media/Q81NcsY6YxK7nxf457/giphy.gif" alt="Gif animé" width="200">
-        <br><br>
-        <button onclick="alert('Tu es un chef !')">Clique ici</button>
+<div class="container">
+    <h1>🇺🇸 USDA Nutrient Tracker</h1>
+    
+    <!-- SEARCH -->
+    <div class="search-box">
+        <input type="text" id="query" placeholder="Search USDA Database (e.g. Raw Spinach)">
+        <button onclick="searchFood()">Search</button>
     </div>
+    
+    <div id="loading" class="loading">Searching USDA Database...</div>
+    
+    <!-- RESULT LIST (Hidden by default) -->
+    <div id="searchResults"></div>
+
+    <!-- TABLE -->
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Food Name</th>
+                    <th>Weight</th>
+                    <th>Kcal</th>
+                    <th>Protein</th>
+                    <th>Carbs</th>
+                    <th>Fat</th>
+                    <th>Calcium</th>
+                    <th>Iron</th>
+                    <th>Vit C</th>
+                    <th>Magnesium</th>
+                    <th>Potassium</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="mealList"></tbody>
+            <tfoot>
+                <tr class="totals">
+                    <td>TOTAL</td>
+                    <td id="tWeight">0g</td>
+                    <td id="tCal">0</td>
+                    <td id="tProt">0g</td>
+                    <td id="tCarb">0g</td>
+                    <td id="tFat">0g</td>
+                    <td id="tCalci">0mg</td>
+                    <td id="tIron">0mg</td>
+                    <td id="tVitC">0mg</td>
+                    <td id="tMag">0mg</td>
+                    <td id="tPot">0mg</td>
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+
+<script>
+    // ==========================================
+    // 🔑 METS TA CLÉ USDA ICI (LIGNE 128)
+    // ==========================================
+    const API_KEY = 'TA_CLE_API_ICI';
+    
+    let mealPlan = [];
+
+    // 1. SEARCH FUNCTION
+    async function searchFood() {
+        const query = document.getElementById('query').value;
+        const resultsDiv = document.getElementById('searchResults');
+        const loader = document.getElementById('loading');
+
+        if(!query) return;
+
+        loader.style.display = 'block';
+        resultsDiv.style.display = 'none';
+
+        // USDA Search Endpoint
+        const url = `https://api.nal.usda.gov/fdc/v1/foods/search?api_key=${API_KEY}&query=${query}&dataType=Foundation,SR Legacy&pageSize=10`;
+
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            loader.style.display = 'none';
+            resultsDiv.innerHTML = '';
+            resultsDiv.style.display = 'block';
+
+            if(data.foods.length === 0) {
+                resultsDiv.innerHTML = '<div style="padding:10px;">No results found.</div>';
+                return;
+            }
+nBfP2kxAaGObmdHElf8cNiWeWbdB5vdztzoz80se
+            // Display results
+            data.foods.forEach(food => {
+                let div = document.createElement('div');
+                div.className = 'result-item';
+                div.innerText = food.description;
+                div.onclick = function() {
+                    selectFood(food.fdcId, food.description);
+                };
+                resultsDiv.appendChild(div);
+            });
+
+        } catch (error) {
+            console.error(error);
+            loader.innerText = "Error checking API Key.";
+        }
+    }
+
+    // 2. GET DETAILS FUNCTION (When you click a food)
+    async function selectFood(fdcId, name) {
+        document.getElementById('searchResults').style.display = 'none';
+        
+        let weight = prompt(`How many grams of "${name}"?`, "100");
+        weight = parseFloat(weight);
+        if(!weight) return;
+
+        // USDA Details Endpoint
+        const url = `https://api.nal.usda.gov/fdc/v1/food/${fdcId}?api_key=${API_KEY}`;
+        
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+
+            // USDA stores nutrients in a list with IDs. We need to find them.
+            // ID Mapping: 1008=Kcal, 1003=Prot, 1005=Carb, 1004=Fat, 1087=Calcium, 1089=Iron, 1162=VitC, 1090=Magnesium, 1092=Potassium
+            
+            const getNutrient = (id) => {
+                let n = data.foodNutrients.find(x => x.nutrient.number === id || x.nutrient.id === id); // Checks both formats
+                // Sometimes USDA uses different ID formats, this is a simplified search
+                if(!n) n = data.foodNutrients.find(x => x.nutrient.number == id);
+                
+                if (n && n.amount) {
+                    return (n.amount * weight) / 100;
+                }
+                return 0;
+            };
+
+            // Retrieve Data (IDs are standard USDA nutrient numbers)
+            mealPlan.push({
+                name: name,
+                weight: weight,
+                cal: getNutrient('208'), // Energy (Kcal) - sometimes 208, sometimes 1008
+                prot: getNutrient('203'), // Protein
+                carb: getNutrient('205'), // Carbs
+                fat: getNutrient('204'), // Fat
+                calcium: getNutrient('301'), // Calcium
+                iron: getNutrient('303'), // Iron
+                vitC: getNutrient('401'), // Vit C
+                mag: getNutrient('304'), // Magnesium
+                pot: getNutrient('306')  // Potassium
+            });
+
+            updateTable();
+            document.getElementById('query').value = "";
+
+        } catch (error) {
+            console.error(error);
+            alert("Error fetching food details.");
+        }
+    }
+
+    // 3. DISPLAY TABLE
+    function updateTable() {
+        const tbody = document.getElementById('mealList');
+        tbody.innerHTML = "";
+        
+        let t = { w:0, cal:0, prot:0, carb:0, fat:0, calci:0, iron:0, vitc:0, mag:0, pot:0 };
+
+        mealPlan.forEach((item, index) => {
+            // Add to totals
+            t.w += item.weight; t.cal += item.cal; t.prot += item.prot; t.carb += item.carb;
+            t.fat += item.fat; t.calci += item.calcium; t.iron += item.iron; t.vitc += item.vitC;
+            t.mag += item.mag; t.pot += item.pot;
+
+            tbody.innerHTML += `
+                <tr>
+                    <td>${item.name}</td>
+                    <td>${item.weight}g</td>
+                    <td>${item.cal.toFixed(0)}</td>
+                    <td>${item.prot.toFixed(1)}</td>
+                    <td>${item.carb.toFixed(1)}</td>
+                    <td>${item.fat.toFixed(1)}</td>
+                    <td>${item.calcium.toFixed(0)}mg</td>
+                    <td>${item.iron.toFixed(1)}mg</td>
+                    <td>${item.vitC.toFixed(1)}mg</td>
+                    <td>${item.mag.toFixed(0)}mg</td>
+                    <td>${item.pot.toFixed(0)}mg</td>
+                    <td><button class="delete-btn" onclick="remove(${index})">X</button></td>
+                </tr>
+            `;
+        });
+
+        // Update Totals
+        document.getElementById('tWeight').innerText = t.w + 'g';
+        document.getElementById('tCal').innerText = t.cal.toFixed(0);
+        document.getElementById('tProt').innerText = t.prot.toFixed(1)+'g';
+        document.getElementById('tCarb').innerText = t.carb.toFixed(1)+'g';
+        document.getElementById('tFat').innerText = t.fat.toFixed(1)+'g';
+        document.getElementById('tCalci').innerText = t.calci.toFixed(0)+'mg';
+        document.getElementById('tIron').innerText = t.iron.toFixed(1)+'mg';
+        document.getElementById('tVitC').innerText = t.vitc.toFixed(1)+'mg';
+        document.getElementById('tMag').innerText = t.mag.toFixed(0)+'mg';
+        document.getElementById('tPot').innerText = t.pot.toFixed(0)+'mg';
+    }
+
+    function remove(index) {
+        mealPlan.splice(index, 1);
+        updateTable();
+    }
+</script>
 
 </body>
 </html>
