@@ -2,587 +2,93 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Sunshine Planner V4 ☀️</title>
+    <title>Sunshine Planner V6 (Drive Ready)</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --primary: #FF9F1C; /* Mango */
-            --secondary: #2EC4B6; /* Teal */
-            --bg: #FFF4E6;
-            --paper: #FFFFFF;
-            --text: #2D3436;
-            --danger: #FF6B6B;
-            --success: #2CC990;
-        }
-        
+        :root { --primary: #FF9F1C; --secondary: #2EC4B6; --bg: #FFF8F0; --text: #2D3436; }
         body { font-family: 'Poppins', sans-serif; background-color: var(--bg); margin: 0; padding: 0; color: var(--text); }
         
-        /* HEADER */
-        header { background: var(--paper); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 20px rgba(0,0,0,0.05); position: sticky; top:0; z-index: 100; }
-        h1 { margin: 0; font-size: 24px; color: var(--primary); display: flex; align-items: center; gap: 10px; }
-        nav button { background: transparent; border: none; color: #888; padding: 10px 20px; cursor: pointer; border-radius: 30px; font-weight: 600; transition: 0.3s; }
-        nav button.active { background: var(--primary); color: white; box-shadow: 0 4px 10px rgba(255, 159, 28, 0.4); }
-        nav button:hover:not(.active) { background: #eee; }
-
         /* LAYOUT */
-        main { padding: 30px; max-width: 1300px; margin: 0 auto; }
-        .tab-content { display: none; animation: fadeIn 0.3s; }
-        .tab-content.active { display: block; }
-        @keyframes fadeIn { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
+        header { background: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        h1 { margin: 0; color: var(--primary); font-size: 22px; }
+        nav button { background: transparent; border: none; padding: 10px 20px; cursor: pointer; font-weight: 600; color: #888; border-radius: 20px; }
+        nav button.active { background: var(--primary); color: white; }
 
-        /* PANELS */
-        .panel { background: var(--paper); padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.03); margin-bottom: 25px; border: 1px solid #f0f0f0; }
-        h2 { color: var(--secondary); margin-top: 0; font-size: 20px; display: flex; align-items: center; gap: 10px; }
+        main { padding: 30px; max-width: 1400px; margin: 0 auto; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        .panel { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.03); margin-bottom: 20px; }
+        h2 { color: var(--secondary); margin-top: 0; font-size: 18px; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px; }
         
         /* FORMS */
         label { display: block; font-weight: 600; margin-bottom: 5px; font-size: 13px; color: #555; }
-        input, select, textarea { width: 100%; padding: 12px; border: 2px solid #EEE; border-radius: 12px; box-sizing: border-box; font-family: 'Poppins'; font-size: 14px; transition: 0.3s; }
-        input:focus, select:focus, textarea:focus { border-color: var(--secondary); outline: none; }
-        
+        input, select { width: 100%; padding: 10px; border: 2px solid #eee; border-radius: 10px; font-family: inherit; box-sizing: border-box; }
         .row { display: flex; gap: 20px; flex-wrap: wrap; }
-        .col { flex: 1; min-width: 280px; }
-
-        /* CHECKBOX GRID */
-        .checkbox-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin-top: 10px; }
-        .check-item { background: #FAFAFA; padding: 10px; border-radius: 10px; display: flex; align-items: center; gap: 8px; cursor: pointer; border: 1px solid #eee; }
-        .check-item:hover { background: #F0F0F0; }
-        .check-item input { width: auto; margin: 0; }
-
-        /* BUTTONS */
-        .btn { padding: 12px 24px; border: none; border-radius: 50px; cursor: pointer; font-weight: 600; color: white; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; }
-        .btn:hover { transform: translateY(-2px); }
-        .btn-primary { background: var(--primary); box-shadow: 0 4px 15px rgba(255, 159, 28, 0.3); }
-        .btn-success { background: var(--success); box-shadow: 0 4px 15px rgba(44, 201, 144, 0.3); }
-        .btn-danger { background: var(--danger); box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3); }
-        .btn-magic { background: linear-gradient(45deg, #FF9F1C, #FF6B6B); width: 100%; font-size: 16px; margin-bottom: 20px; color: white; border: none; padding: 15px; border-radius: 15px; cursor: pointer; font-weight: bold; }
+        .col { flex: 1; min-width: 300px; }
 
         /* PLANNER */
-        .planner-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; overflow-x: auto; padding-bottom: 20px; }
-        .day-column { background: white; border-radius: 15px; min-width: 160px; border: 1px solid #eee; overflow: hidden; }
-        .day-header { background: var(--secondary); color: white; padding: 10px; text-align: center; font-weight: bold; }
-        .meal-slot { padding: 8px; border-bottom: 1px dashed #eee; min-height: 80px; position: relative; }
-        .meal-label { font-size: 10px; text-transform: uppercase; color: #aaa; font-weight: bold; display: block; margin-bottom: 4px; }
+        .planner-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; overflow-x: auto; padding-bottom: 10px; }
+        .day-column { background: white; min-width: 160px; border-radius: 12px; border: 1px solid #eee; overflow: hidden; }
+        .day-header { background: var(--secondary); color: white; padding: 8px; text-align: center; font-weight: bold; }
+        .meal-slot { padding: 5px; border-bottom: 1px dashed #eee; min-height: 70px; }
         
-        .planned-recipe { 
-            background: #FFF8F0; padding: 8px; border-radius: 8px; border-left: 4px solid var(--primary); 
-            font-size: 12px; cursor: pointer; transition: 0.2s; position: relative;
-        }
-        .planned-recipe:hover { background: #FFE0B2; }
+        .planned-recipe { background: #FFF4E6; padding: 8px; border-radius: 6px; border-left: 3px solid var(--primary); font-size: 12px; cursor: pointer; margin-bottom: 5px; transition:0.2s; }
+        .planned-recipe:hover { background: #FFE0B2; transform:translateY(-2px); }
 
-        /* RECIPE CARDS */
-        .recipe-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
-        .recipe-card { background: white; border-radius: 16px; padding: 15px; border: 1px solid #eee; position: relative; cursor: pointer; transition: 0.2s; }
-        .recipe-card:hover { transform: translateY(-5px); border-color: var(--primary); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
-        .tag { padding: 3px 8px; font-size: 10px; border-radius: 10px; margin-right: 5px; display: inline-block; font-weight: 600; text-transform: uppercase; }
-        .tag-Sweet { background: #FFEBEE; color: #D32F2F; }
-        .tag-Savory { background: #E0F2F1; color: #00695C; }
+        /* SHOPPING LIST (DRIVE STYLE) */
+        .shop-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid #eee; }
+        .shop-item:hover { background: #f9f9f9; }
+        .shop-btn { background: var(--secondary); color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 11px; }
+        .shop-btn:active { transform: scale(0.95); }
+        .shop-btn.copied { background: #ccc; }
 
-        /* MODAL (POPUP) */
-        .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); z-index: 200; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-        .modal { background: white; width: 90%; max-width: 600px; max-height: 80vh; border-radius: 20px; padding: 30px; position: relative; overflow-y: auto; box-shadow: 0 20px 50px rgba(0,0,0,0.2); animation: popIn 0.3s; }
-        @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        .close-modal { position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer; color: #aaa; }
-        .close-modal:hover { color: #333; }
+        /* MODAL */
+        .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal { background: white; width: 600px; max-height: 80vh; overflow-y: auto; padding: 30px; border-radius: 20px; position: relative; }
+        .close-btn { position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer; }
+        .modal h3 { color: var(--primary); margin-top: 0; }
+        .step-box { background: #f9f9f9; padding: 15px; border-radius: 10px; white-space: pre-wrap; line-height: 1.6; }
 
-        /* BUILDER TABLE */
-        .builder-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
-        .builder-table td { padding: 8px; border-bottom: 1px solid #eee; }
-        .search-results { max-height: 200px; overflow-y: auto; border: 1px solid #eee; background: white; margin-top: 5px; border-radius: 10px; display: none; }
-        .search-item { padding: 10px; cursor: pointer; border-bottom: 1px solid #f9f9f9; }
-        .search-item:hover { background: #f0f8ff; }
+        .btn { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 30px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; }
+        .btn-danger { background: #FF6B6B; }
 
-        @media print {
-            header, nav, .no-print, .btn, .btn-magic { display: none !important; }
-            .planner-grid { display: grid !important; }
-        }
+        @media print { header, nav, .no-print, .btn { display: none; } }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>☀️ Sunshine Planner</h1>
+    <h1>☀️ Sunshine Planner V6</h1>
     <nav>
         <button onclick="showTab('settings')" class="no-print">⚙️ Config</button>
-        <button onclick="showTab('builder')" class="no-print">👩‍🍳 Create Recipe</button>
-        <button onclick="showTab('library')" class="no-print">📚 Library</button>
         <button onclick="showTab('planner')" class="active no-print">📅 Planner</button>
     </nav>
 </header>
 
 <main>
 
-    <!-- TAB 1: SETTINGS -->
+    <!-- SETTINGS TAB -->
     <div id="settings" class="tab-content">
         <div class="row">
             <div class="col">
                 <div class="panel">
-                    <h2>👤 Dietary Profile</h2>
-                    
+                    <h2>👤 Diet & Filters</h2>
                     <label>Diet Type</label>
-                    <select id="setDiet">
+                    <select id="setDiet" onchange="renderRecipesList()">
                         <option value="Standard">Standard</option>
-                        <option value="Vegetarian">Vegetarian 🥚</option>
                         <option value="Vegan">Vegan 🌱</option>
-                        <option value="Pescatarian">Pescatarian 🐟</option>
-                        <option value="Gluten-Free">Gluten-Free 🌾</option>
+                        <option value="Vegetarian">Vegetarian 🥚</option>
                         <option value="Keto">Keto 🥓</option>
-                        <option value="Paleo">Paleo 🍖</option>
                     </select>
 
-                    <h3 style="margin-top:20px; font-size:16px;">⛔ Allergies & Exclusions</h3>
-                    <p style="font-size:12px; color:#666;">Check ingredients to strictly avoid.</p>
-                    <div class="checkbox-grid" id="allergyGrid">
-                        <!-- Populated by JS -->
-                    </div>
-                </div>
+                    <label style="margin-top:15px">🤢 Dislikes (Hidden)</label>
+                    <input type="text" id="setDislikes" placeholder="e.g. Mushrooms, Cilantro">
 
-                <div class="panel">
-                    <h2>🎯 Goals</h2>
-                    <label>Daily Calories</label>
-                    <input type="number" id="setCal" value="2000" style="font-size:20px; font-weight:bold; color:var(--primary);">
-                </div>
-            </div>
-
-            <div class="col">
-                <div class="panel">
-                    <h2>🍽️ Meal Structure</h2>
-                    <label>Meals per Day</label>
-                    <select id="setSlots" onchange="renderSlotConfig()">
-                        <option value="3">3 Meals</option>
-                        <option value="4">4 Meals</option>
-                        <option value="5">5 Meals</option>
-                    </select>
-                    
-                    <div id="slotConfigArea" style="margin-top:15px;"></div>
-
-                    <button class="btn btn-primary" onclick="saveSettings()" style="width:100%; margin-top:20px;">💾 Save Configuration</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- TAB 2: BUILDER (RESTORED) -->
-    <div id="builder" class="tab-content">
-        <div class="row">
-            <div class="col">
-                <div class="panel">
-                    <h2>1. Add Ingredients (USDA)</h2>
-                    <input type="text" id="usdaSearch" placeholder="Type ingredient (e.g. Strawberry)..." onkeypress="if(event.key==='Enter') searchUSDA()">
-                    <button class="btn btn-primary" onclick="searchUSDA()" style="margin-top:10px; width:100%;">Search</button>
-                    <div id="usdaResults" class="search-results"></div>
-
-                    <h3 style="margin-top:20px;">Current Ingredients</h3>
-                    <table class="builder-table" id="builderTable"><tbody></tbody></table>
+                    <label style="margin-top:15px">⛔ Allergies</label>
+                    <input type="text" id="setAllergies" placeholder="e.g. Peanuts, Milk">
                 </div>
             </div>
             <div class="col">
                 <div class="panel">
-                    <h2>2. Recipe Details</h2>
-                    <label>Recipe Name</label>
-                    <input type="text" id="recipeName" placeholder="e.g. Mom's Apple Pie">
-                    
-                    <div class="row">
-                        <div class="col">
-                            <label>Type</label>
-                            <select id="recipeType"><option value="Savory">Savory (Salé)</option><option value="Sweet">Sweet (Sucré)</option></select>
-                        </div>
-                        <div class="col">
-                            <label>Diet Tag</label>
-                            <select id="recipeDiet">
-                                <option value="Standard">Standard</option>
-                                <option value="Vegetarian">Vegetarian</option>
-                                <option value="Vegan">Vegan</option>
-                                <option value="Keto">Keto</option>
-                                <option value="Gluten-Free">Gluten-Free</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <label style="margin-top:10px;">Instructions</label>
-                    <textarea id="recipeInst" rows="4" placeholder="Step 1: Mix everything..."></textarea>
-
-                    <button class="btn btn-success" onclick="saveRecipe()" style="width:100%; margin-top:20px;">💾 Save Recipe</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- TAB 3: LIBRARY -->
-    <div id="library" class="tab-content">
-        <div class="panel">
-            <div style="display:flex; justify-content:space-between;">
-                <h2>📚 Recipe Book</h2>
-                <button class="btn btn-danger" onclick="resetDefaults()" style="font-size:12px;">Reset All</button>
-            </div>
-            <div id="recipeGrid" class="recipe-grid" style="margin-top:20px;"></div>
-        </div>
-    </div>
-
-    <!-- TAB 4: PLANNER -->
-    <div id="planner" class="tab-content active">
-        <button class="btn-magic no-print" onclick="autoGenerate()">⚡ Auto-Fill My Week (Magic Generator)</button>
-
-        <div class="row">
-            <div class="col" style="flex:3;">
-                <div class="panel">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                        <h2>📅 Schedule</h2>
-                        <div class="no-print">
-                            <button class="btn btn-secondary" onclick="window.print()">Print</button>
-                            <button class="btn btn-danger" onclick="clearPlanner()">Clear</button>
-                        </div>
-                    </div>
-                    <div id="plannerGrid" class="planner-grid"></div>
-                </div>
-            </div>
-            <div class="col no-print" style="flex:1;">
-                <div class="panel">
-                    <h2>🛒 Shopping</h2>
-                    <div id="shoppingList"></div>
-                </div>
-                <div class="panel">
-                    <h2>📊 Stats</h2>
-                    <div id="statsArea"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-</main>
-
-<!-- RECIPE MODAL -->
-<div class="modal-overlay" id="recipeModal" onclick="closeModal(event)">
-    <div class="modal">
-        <span class="close-modal" onclick="closeModal(null, true)">&times;</span>
-        <h2 id="modalTitle">Recipe Title</h2>
-        <div style="margin-bottom:15px;">
-            <span class="tag" id="modalType">Type</span>
-            <span class="tag" id="modalDiet" style="background:#eee; color:#555;">Diet</span>
-        </div>
-        
-        <div style="background:#f9f9f9; padding:15px; border-radius:10px; margin-bottom:20px; display:flex; gap:20px; justify-content:center;">
-            <div style="text-align:center;"><strong>Calories</strong><br><span id="modalCal" style="color:var(--primary); font-size:18px;">0</span></div>
-            <div style="text-align:center;"><strong>Protein</strong><br><span id="modalProt" style="color:var(--secondary); font-size:18px;">0g</span></div>
-        </div>
-
-        <h3>Ingredients</h3>
-        <ul id="modalIng" style="line-height:1.6; color:#555;"></ul>
-
-        <h3 style="margin-top:20px;">Instructions</h3>
-        <p id="modalInst" style="line-height:1.6; color:#555; white-space: pre-wrap;">No instructions provided.</p>
-        
-        <button class="btn btn-danger" id="btnDeleteRecipe" style="margin-top:20px; width:100%;">Delete Recipe</button>
-    </div>
-</div>
-
-<script>
-    const API_KEY = 'nBfP2kXAaG0bmdHElfBcNiWeWbdB5vdtzzoZ80se';
-    const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    const COMMON_ALLERGENS = ["Peanuts", "Tree Nuts", "Milk", "Egg", "Wheat", "Soy", "Fish", "Shellfish", "Gluten", "Pork", "Alcohol"];
-
-    // 1. DATA INITIALIZATION
-    const STARTER_RECIPES = [
-        { id: 1, name: "Avocado Toast & Eggs", type: "Savory", diet: "Vegetarian", calories: 450, protein: 20, ingredients: [{name:"Bread", qty:"2 slices"}, {name:"Avocado", qty:"1/2"}, {name:"Eggs", qty:"2"}], instructions: "1. Toast bread.\n2. Mash avocado.\n3. Fry eggs and place on top." },
-        { id: 2, name: "Berry Oatmeal", type: "Sweet", diet: "Vegan", calories: 350, protein: 10, ingredients: [{name:"Oats", qty:"50g"}, {name:"Almond Milk", qty:"200ml"}, {name:"Berries", qty:"50g"}], instructions: "1. Cook oats with milk.\n2. Top with berries." },
-        { id: 3, name: "Chicken Salad", type: "Savory", diet: "Standard", calories: 500, protein: 45, ingredients: [{name:"Chicken Breast", qty:"150g"}, {name:"Lettuce", qty:"100g"}, {name:"Olive Oil", qty:"1tbsp"}], instructions: "1. Grill chicken.\n2. Chop lettuce.\n3. Mix with oil." }
-    ];
-
-    let settings = JSON.parse(localStorage.getItem('sun_settings_v4')) || {
-        diet: 'Standard', allergies: [], cal: 2000, slots: 3, slotPrefs: ['Savory', 'Savory', 'Savory']
-    };
-    let userRecipes = JSON.parse(localStorage.getItem('sun_recipes_v4')) || [];
-    let weeklyPlan = JSON.parse(localStorage.getItem('sun_plan_v4')) || {};
-    let builderIng = [];
-
-    // Combine Starter + User Recipes
-    function getAllRecipes() { return [...STARTER_RECIPES, ...userRecipes]; }
-
-    function init() {
-        // Load settings
-        document.getElementById('setDiet').value = settings.diet;
-        document.getElementById('setCal').value = settings.cal;
-        document.getElementById('setSlots').value = settings.slots;
-        
-        renderAllergyGrid();
-        renderSlotConfig();
-        renderLibrary();
-        renderPlanner();
-        updateStats();
-    }
-
-    function showTab(id) {
-        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll('nav button').forEach(el => el.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        document.querySelector(`button[onclick="showTab('${id}')"]`).classList.add('active');
-    }
-
-    // --- SETTINGS ---
-    function renderAllergyGrid() {
-        const grid = document.getElementById('allergyGrid');
-        grid.innerHTML = '';
-        COMMON_ALLERGENS.forEach(all => {
-            const checked = settings.allergies.includes(all) ? 'checked' : '';
-            grid.innerHTML += `
-                <label class="check-item">
-                    <input type="checkbox" value="${all}" ${checked}> ${all}
-                </label>`;
-        });
-    }
-
-    function renderSlotConfig() {
-        const count = parseInt(document.getElementById('setSlots').value);
-        const area = document.getElementById('slotConfigArea');
-        area.innerHTML = '';
-        for(let i=0; i<count; i++) {
-            const pref = settings.slotPrefs[i] || 'Any';
-            area.innerHTML += `
-                <div style="margin-bottom:8px; display:flex; align-items:center; gap:10px;">
-                    <span style="font-size:12px; font-weight:bold; width:50px;">Meal ${i+1}</span>
-                    <select id="pref_${i}" style="padding:5px;">
-                        <option value="Any" ${pref=='Any'?'selected':''}>Any</option>
-                        <option value="Sweet" ${pref=='Sweet'?'selected':''}>Sweet 🥞</option>
-                        <option value="Savory" ${pref=='Savory'?'selected':''}>Savory 🥗</option>
-                    </select>
-                </div>`;
-        }
-    }
-
-    function saveSettings() {
-        // Get checkboxes
-        const checkboxes = document.querySelectorAll('#allergyGrid input:checked');
-        let selectedAllergies = [];
-        checkboxes.forEach(cb => selectedAllergies.push(cb.value));
-
-        // Get Slots
-        const count = parseInt(document.getElementById('setSlots').value);
-        let prefs = [];
-        for(let i=0; i<count; i++) prefs.push(document.getElementById(`pref_${i}`).value);
-
-        settings = {
-            diet: document.getElementById('setDiet').value,
-            cal: document.getElementById('setCal').value,
-            slots: count,
-            slotPrefs: prefs,
-            allergies: selectedAllergies
-        };
-        localStorage.setItem('sun_settings_v4', JSON.stringify(settings));
-        renderPlanner();
-        alert("Settings Saved!");
-    }
-
-    // --- BUILDER (USDA) ---
-    async function searchUSDA() {
-        const q = document.getElementById('usdaSearch').value;
-        const div = document.getElementById('usdaResults');
-        if(!q) return;
-        div.style.display='block'; div.innerHTML='Searching...';
-        try {
-            const req = await fetch(`https://api.nal.usda.gov/fdc/v1/foods/search?api_key=${API_KEY}&query=${q}&pageSize=5&dataType=Foundation,SR Legacy`);
-            const data = await req.json();
-            div.innerHTML='';
-            data.foods.forEach(f => {
-                const item = document.createElement('div');
-                item.className='search-item';
-                item.innerText = f.description;
-                item.onclick = () => addIng(f.fdcId, f.description);
-                div.appendChild(item);
-            });
-        } catch(e) { div.innerHTML='Error'; }
-    }
-
-    async function addIng(id, name) {
-        document.getElementById('usdaResults').style.display='none';
-        const w = parseFloat(prompt(`Grams of ${name}?`, "100"));
-        if(!w) return;
-        const req = await fetch(`https://api.nal.usda.gov/fdc/v1/food/${id}?api_key=${API_KEY}`);
-        const data = await req.json();
-        const get = (id) => { let n = data.foodNutrients.find(x => x.nutrient.number == id || x.nutrient.id == id); return n ? (n.amount * w)/100 : 0; };
-        
-        builderIng.push({
-            name: name, qty: w+"g",
-            cal: get(1008)||get(208), prot: get(1003)||get(203)
-        });
-        renderBuilderTable();
-    }
-
-    function renderBuilderTable() {
-        const tb = document.querySelector('#builderTable tbody');
-        tb.innerHTML = '';
-        builderIng.forEach((i, idx) => {
-            tb.innerHTML += `<tr><td>${i.name}</td><td>${i.qty}</td><td>${i.cal.toFixed(0)}</td><td><button onclick="builderIng.splice(${idx},1);renderBuilderTable()">x</button></td></tr>`;
-        });
-    }
-
-    function saveRecipe() {
-        const name = document.getElementById('recipeName').value;
-        if(!name || !builderIng.length) return alert("Recipe needs name and ingredients");
-        
-        const totals = builderIng.reduce((acc, curr) => ({cal: acc.cal + curr.cal, prot: acc.prot + curr.prot}), {cal:0, prot:0});
-
-        const newRec = {
-            id: Date.now(),
-            name: name,
-            type: document.getElementById('recipeType').value,
-            diet: document.getElementById('recipeDiet').value,
-            calories: Math.round(totals.cal),
-            protein: Math.round(totals.prot),
-            ingredients: builderIng, // Store full object
-            instructions: document.getElementById('recipeInst').value
-        };
-        
-        userRecipes.push(newRec);
-        localStorage.setItem('sun_recipes_v4', JSON.stringify(userRecipes));
-        alert("Recipe Saved!");
-        builderIng=[]; document.getElementById('recipeName').value=""; renderBuilderTable(); renderLibrary();
-    }
-
-    // --- LIBRARY & MODAL ---
-    function renderLibrary() {
-        const grid = document.getElementById('recipeGrid');
-        grid.innerHTML = '';
-        getAllRecipes().forEach(r => {
-            // Check allergies (Simple string check)
-            const hasAllergy = r.ingredients.some(ing => settings.allergies.some(bad => ing.name.toLowerCase().includes(bad.toLowerCase())));
-            if(hasAllergy) return;
-
-            grid.innerHTML += `
-            <div class="recipe-card" onclick="openRecipe(${r.id})">
-                <h3>${r.name}</h3>
-                <span class="tag tag-${r.type}">${r.type}</span>
-                <span class="tag" style="background:#eee">${r.diet}</span>
-                <p style="font-size:12px; color:#666;">🔥 ${r.calories} kcal</p>
-            </div>`;
-        });
-    }
-
-    function openRecipe(id) {
-        const r = getAllRecipes().find(x => x.id === id);
-        if(!r) return;
-        
-        document.getElementById('modalTitle').innerText = r.name;
-        document.getElementById('modalType').innerText = r.type;
-        document.getElementById('modalType').className = `tag tag-${r.type}`;
-        document.getElementById('modalDiet').innerText = r.diet;
-        document.getElementById('modalCal').innerText = r.calories;
-        document.getElementById('modalProt').innerText = r.protein + 'g';
-        document.getElementById('modalInst').innerText = r.instructions || "No instructions.";
-        
-        const list = document.getElementById('modalIng');
-        list.innerHTML = '';
-        r.ingredients.forEach(i => list.innerHTML += `<li>${i.name} - <b>${i.qty}</b></li>`);
-        
-        // Show Delete button only if it's a User Recipe (ID is large timestamp)
-        const btnDel = document.getElementById('btnDeleteRecipe');
-        if(r.id > 1000) {
-            btnDel.style.display = 'block';
-            btnDel.onclick = () => { deleteUserRecipe(r.id); };
-        } else {
-            btnDel.style.display = 'none';
-        }
-
-        document.getElementById('recipeModal').style.display = 'flex';
-    }
-
-    function closeModal(e, force) {
-        if(force || e.target.id === 'recipeModal') document.getElementById('recipeModal').style.display = 'none';
-    }
-
-    function deleteUserRecipe(id) {
-        if(!confirm("Delete this recipe?")) return;
-        userRecipes = userRecipes.filter(r => r.id !== id);
-        localStorage.setItem('sun_recipes_v4', JSON.stringify(userRecipes));
-        closeModal(null, true);
-        renderLibrary();
-    }
-
-    // --- PLANNER & AUTO GEN ---
-    function autoGenerate() {
-        const all = getAllRecipes();
-        // Filter Allergies strict
-        const safeRecipes = all.filter(r => 
-            !r.ingredients.some(ing => settings.allergies.some(bad => ing.name.toLowerCase().includes(bad.toLowerCase())))
-        );
-
-        DAYS.forEach(day => {
-            for(let i=0; i<settings.slots; i++) {
-                const key = `${day}-${i}`;
-                if(weeklyPlan[key]) continue; // Skip existing
-                
-                const pref = settings.slotPrefs[i] || 'Any';
-                let pool = safeRecipes;
-                if(pref !== 'Any') pool = pool.filter(r => r.type === pref);
-                
-                if(pool.length > 0) {
-                    const pick = pool[Math.floor(Math.random() * pool.length)];
-                    weeklyPlan[key] = pick.id;
-                }
-            }
-        });
-        localStorage.setItem('sun_plan_v4', JSON.stringify(weeklyPlan));
-        renderPlanner();
-    }
-
-    function renderPlanner() {
-        const grid = document.getElementById('plannerGrid');
-        grid.innerHTML = '';
-        DAYS.forEach(day => {
-            let col = `<div class="day-column"><div class="day-header">${day}</div>`;
-            for(let i=0; i<settings.slots; i++) {
-                const key = `${day}-${i}`;
-                const rid = weeklyPlan[key];
-                let content = '';
-                if(rid) {
-                    const r = getAllRecipes().find(x=>x.id==rid);
-                    if(r) content = `
-                    <div class="planned-recipe" onclick="openRecipe(${r.id})">
-                        <span style="position:absolute; top:0; right:5px; color:red; font-size:16px; z-index:10;" onclick="event.stopPropagation(); removePlan('${key}')">&times;</span>
-                        <strong>${r.name}</strong><br>${r.calories} kcal
-                    </div>`;
-                }
-                col += `<div class="meal-slot"><span class="meal-label">Meal ${i+1}</span>${content}</div>`;
-            }
-            grid.innerHTML += col + '</div>';
-        });
-        updateStats();
-    }
-
-    function removePlan(key) {
-        delete weeklyPlan[key];
-        localStorage.setItem('sun_plan_v4', JSON.stringify(weeklyPlan));
-        renderPlanner();
-    }
-    
-    function clearPlanner() {
-        weeklyPlan = {}; localStorage.setItem('sun_plan_v4', JSON.stringify(weeklyPlan)); renderPlanner();
-    }
-
-    function updateStats() {
-        const shop = document.getElementById('shoppingList');
-        const stat = document.getElementById('statsArea');
-        let ings = {}; let cal = 0; let count = 0;
-        
-        for(let key in weeklyPlan) {
-            const r = getAllRecipes().find(x=>x.id==weeklyPlan[key]);
-            if(r) {
-                cal += r.calories; count++;
-                r.ingredients.forEach(i => ings[i.name] = (ings[i.name]||0) + 1);
-            }
-        }
-        
-        let listHtml = '<ul style="padding-left:15px; font-size:13px;">';
-        for(let [n, c] of Object.entries(ings)) listHtml += `<li>${n} ${c>1?`(x${c})`:''}</li>`;
-        shop.innerHTML = listHtml + '</ul>';
-
-        const avg = count > 0 ? Math.round(cal/7) : 0;
-        stat.innerHTML = `<strong>Avg Cal:</strong> ${avg} / ${settings.cal}<br><div style="background:#eee;height:10px;border-radius:5px;margin-top:5px;"><div style="background:var(--primary);height:100%;width:${Math.min((avg/settings.cal)*100, 100)}%"></div></div>`;
-    }
-
-    function resetDefaults() {
-        if(confirm("Reset everything?")) { localStorage.clear(); location.reload(); }
-    }
-
-    init();
-</script>
-</body>
-</html>
+                    <h2>🎯 Setup</h2>
