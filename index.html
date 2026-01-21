@@ -92,3 +92,296 @@
             <div class="col">
                 <div class="panel">
                     <h2>🎯 Setup</h2>
+                    <div class="row"><div class="col"><label>Calories</label><input type="number" id="setCal" value="2000"></div><div class="col"><label>Protein</label><input type="number" id="setProt" value="150"></div></div>
+                    <div class="row" style="margin-top:10px"><div class="col"><label>Carbs</label><input type="number" id="setCarb" value="250"></div><div class="col"><label>Fat</label><input type="number" id="setFat" value="70"></div></div>
+                    <label style="margin-top:15px">Meals per Day</label>
+                    <select id="setSlots"><option value="3">3 Meals</option><option value="4">4 Meals</option><option value="5">5 Meals</option></select>
+                    <button class="btn" onclick="saveSettings()">💾 Save Config</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PLANNER TAB -->
+    <div id="planner" class="tab-content active">
+        <div class="row">
+            <!-- CONTROLS -->
+            <div class="col no-print" style="max-width: 300px;">
+                <div class="panel">
+                    <h2>1. Add Meal</h2>
+                    <label>Recipe</label>
+                    <select id="recipeSelect"></select>
+                    
+                    <label style="margin-top:10px">When?</label>
+                    <div style="display:flex; gap:5px;">
+                        <select id="daySelect"><option value="Mon">Mon</option><option value="Tue">Tue</option><option value="Wed">Wed</option><option value="Thu">Thu</option><option value="Fri">Fri</option><option value="Sat">Sat</option><option value="Sun">Sun</option></select>
+                        <select id="slotSelect"></select>
+                    </div>
+                    
+                    <button class="btn" onclick="addToPlan()">+ Add</button>
+                </div>
+                <div class="panel">
+                    <button class="btn btn-danger" onclick="clearPlanner()">🗑️ Clear Week</button>
+                </div>
+            </div>
+
+            <!-- GRID -->
+            <div class="col" style="flex: 3;">
+                <div class="panel">
+                    <h2>📅 Weekly Schedule</h2>
+                    <div id="plannerGrid" class="planner-grid"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- SHOPPING ASSISTANT -->
+            <div class="col">
+                <div class="panel">
+                    <h2>🛒 Drive Assistant</h2>
+                    <p style="font-size:12px; color:#666; margin-bottom:10px;">Click "Copy" next to an item, then paste in your Drive search bar.</p>
+                    <div id="shoppingList"></div>
+                </div>
+            </div>
+            <!-- STATS -->
+            <div class="col">
+                <div class="panel">
+                    <h2>📊 Macro Stats</h2>
+                    <table style="width:100%; border-collapse:collapse; font-size:13px;">
+                        <thead><tr><th>Day</th><th>Cal</th><th>Prot</th><th>Carb</th><th>Fat</th></tr></thead>
+                        <tbody id="statsBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<!-- RECIPE MODAL POPUP -->
+<div class="modal-overlay" id="recipeModal">
+    <div class="modal">
+        <span class="close-btn" onclick="closeModal()">&times;</span>
+        <h3 id="mTitle">Recipe Name</h3>
+        <div style="margin-bottom:15px">
+            <span style="background:#eee; padding:5px 10px; border-radius:10px; font-size:12px;" id="mDiet">Diet</span>
+            <span style="background:#eee; padding:5px 10px; border-radius:10px; font-size:12px;" id="mType">Type</span>
+            <span style="margin-left:10px; font-weight:bold; color:var(--primary)" id="mCal">0 kcal</span>
+        </div>
+        
+        <h4>Ingredients</h4>
+        <ul id="mIng" style="font-size:14px; color:#555;"></ul>
+
+        <h4>Preparation Steps</h4>
+        <div class="step-box" id="mSteps"></div>
+        
+        <button class="btn btn-danger" id="btnRemoveMeal" style="margin-top:20px">Remove from Planner</button>
+    </div>
+</div>
+
+<script>
+    // ======================================================
+    // 📝 TES RECETTES (AVEC ETAPES !)
+    // ======================================================
+    const MY_RECIPES = [
+        { 
+            id: 1, name: "Vegan Tofu Scramble", diet: "Vegan", type: "Savory", 
+            cal: 350, prot: 20, carb: 10, fat: 25, 
+            ing: ["Tofu Firm", "Turmeric Powder", "Baby Spinach", "Red Onion"],
+            steps: "1. Crumble the tofu.\n2. Sauté onion in pan.\n3. Add tofu, turmeric, salt.\n4. Add spinach at the end until wilted."
+        },
+        { 
+            id: 2, name: "Chicken & Rice", diet: "Standard", type: "Savory", 
+            cal: 500, prot: 40, carb: 60, fat: 10, 
+            ing: ["Chicken Breast", "Basmati Rice", "Broccoli Florets"],
+            steps: "1. Cook rice according to package.\n2. Pan fry chicken breast with spices.\n3. Steam broccoli.\n4. Serve together."
+        },
+        { 
+            id: 3, name: "Oatmeal Banana", diet: "Vegan", type: "Sweet", 
+            cal: 400, prot: 10, carb: 70, fat: 6, 
+            ing: ["Rolled Oats", "Banana", "Almond Milk", "Cinnamon"],
+            steps: "1. Mix oats and milk in a pot.\n2. Cook for 5 mins stirring.\n3. Slice banana on top.\n4. Sprinkle cinnamon."
+        },
+        { 
+            id: 4, name: "Salmon Salad", diet: "Pescatarian", type: "Savory", 
+            cal: 450, prot: 35, carb: 15, fat: 25, 
+            ing: ["Salmon Fillet", "Romaine Lettuce", "Cucumber", "Olive Oil"],
+            steps: "1. Bake salmon at 200°C for 15 mins.\n2. Chop lettuce and cucumber.\n3. Flake salmon onto salad.\n4. Drizzle with oil."
+        },
+        // Copie ceci pour ajouter une recette :
+        // { id: 5, name: "NOM", diet: "Standard", type: "Savory", cal: 0, prot: 0, carb: 0, fat: 0, ing: ["Ing1"], steps: "Steps..." },
+    ];
+
+    // ======================================================
+    
+    let settings = JSON.parse(localStorage.getItem('sun_v6_settings')) || {
+        diet: 'Standard', dislikes: '', allergies: '',
+        cal: 2000, prot: 150, carb: 250, fat: 70, slots: 3
+    };
+    let weeklyPlan = JSON.parse(localStorage.getItem('sun_v6_plan')) || {};
+    const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+    function init() {
+        document.getElementById('setDiet').value = settings.diet;
+        document.getElementById('setDislikes').value = settings.dislikes;
+        document.getElementById('setAllergies').value = settings.allergies;
+        document.getElementById('setCal').value = settings.cal;
+        document.getElementById('setProt').value = settings.prot;
+        document.getElementById('setCarb').value = settings.carb;
+        document.getElementById('setFat').value = settings.fat;
+        document.getElementById('setSlots').value = settings.slots;
+
+        renderSlotSelect();
+        renderRecipesList();
+        renderPlanner();
+        updateStats();
+    }
+
+    function showTab(id) {
+        document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+
+    function saveSettings() {
+        settings = {
+            diet: document.getElementById('setDiet').value,
+            dislikes: document.getElementById('setDislikes').value,
+            allergies: document.getElementById('setAllergies').value,
+            cal: parseFloat(document.getElementById('setCal').value),
+            prot: parseFloat(document.getElementById('setProt').value),
+            carb: parseFloat(document.getElementById('setCarb').value),
+            fat: parseFloat(document.getElementById('setFat').value),
+            slots: parseInt(document.getElementById('setSlots').value)
+        };
+        localStorage.setItem('sun_v6_settings', JSON.stringify(settings));
+        renderSlotSelect();
+        renderRecipesList();
+        renderPlanner();
+        updateStats();
+        alert("Saved!");
+    }
+
+    function renderSlotSelect() {
+        const s = document.getElementById('slotSelect');
+        s.innerHTML = '';
+        for(let i=0; i<settings.slots; i++) s.innerHTML += `<option value="${i}">Meal ${i+1}</option>`;
+    }
+
+    function renderRecipesList() {
+        const sel = document.getElementById('recipeSelect');
+        sel.innerHTML = '';
+        const dislikes = settings.dislikes.toLowerCase().split(',').map(x=>x.trim()).filter(x=>x);
+        const allergies = settings.allergies.toLowerCase().split(',').map(x=>x.trim()).filter(x=>x);
+
+        MY_RECIPES.forEach(r => {
+            if(settings.diet !== 'Standard' && r.diet !== settings.diet) return;
+            if(r.ing.some(i => allergies.some(bad => i.toLowerCase().includes(bad)))) return;
+            if(r.ing.some(i => dislikes.some(bad => i.toLowerCase().includes(bad)))) return;
+
+            let opt = document.createElement('option');
+            opt.value = r.id;
+            opt.innerText = r.name;
+            sel.appendChild(opt);
+        });
+    }
+
+    function addToPlan() {
+        const rid = document.getElementById('recipeSelect').value;
+        const day = document.getElementById('daySelect').value;
+        const slot = document.getElementById('slotSelect').value;
+        if(!rid) return;
+        weeklyPlan[`${day}-${slot}`] = parseInt(rid);
+        localStorage.setItem('sun_v6_plan', JSON.stringify(weeklyPlan));
+        renderPlanner();
+        updateStats();
+    }
+
+    function renderPlanner() {
+        const grid = document.getElementById('plannerGrid');
+        grid.innerHTML = '';
+        DAYS.forEach(day => {
+            let col = `<div class="day-column"><div class="day-header">${day}</div>`;
+            for(let i=0; i<settings.slots; i++) {
+                const key = `${day}-${i}`;
+                const rid = weeklyPlan[key];
+                let content = '';
+                if(rid) {
+                    const r = MY_RECIPES.find(x => x.id === rid);
+                    if(r) content = `<div class="planned-recipe" onclick="openRecipe(${r.id}, '${key}')"><strong>${r.name}</strong><br>${r.cal} kcal</div>`;
+                }
+                col += `<div class="meal-slot">${content}</div>`;
+            }
+            grid.innerHTML += col + '</div>';
+        });
+    }
+
+    // MODAL LOGIC
+    function openRecipe(id, key) {
+        const r = MY_RECIPES.find(x => x.id === id);
+        if(!r) return;
+        document.getElementById('mTitle').innerText = r.name;
+        document.getElementById('mDiet').innerText = r.diet;
+        document.getElementById('mType').innerText = r.type;
+        document.getElementById('mCal').innerText = r.cal + " kcal";
+        document.getElementById('mIng').innerHTML = r.ing.map(i => `<li>${i}</li>`).join('');
+        document.getElementById('mSteps').innerText = r.steps || "No instructions.";
+        
+        const btn = document.getElementById('btnRemoveMeal');
+        if(key) {
+            btn.style.display = 'block';
+            btn.onclick = () => { delete weeklyPlan[key]; localStorage.setItem('sun_v6_plan', JSON.stringify(weeklyPlan)); closeModal(); renderPlanner(); updateStats(); };
+        } else {
+            btn.style.display = 'none';
+        }
+        
+        document.getElementById('recipeModal').style.display = 'flex';
+    }
+
+    function closeModal() { document.getElementById('recipeModal').style.display = 'none'; }
+
+    function updateStats() {
+        const tb = document.getElementById('statsBody');
+        const shp = document.getElementById('shoppingList');
+        tb.innerHTML = ''; shp.innerHTML = '';
+        let shopMap = {};
+
+        DAYS.forEach(day => {
+            let t = {cal:0, prot:0, carb:0, fat:0};
+            for(let i=0; i<settings.slots; i++) {
+                const rid = weeklyPlan[`${day}-${i}`];
+                if(rid) {
+                    const r = MY_RECIPES.find(x=>x.id==rid);
+                    if(r) {
+                        t.cal+=r.cal; t.prot+=r.prot; t.carb+=r.carb; t.fat+=r.fat;
+                        r.ing.forEach(ing => shopMap[ing] = (shopMap[ing]||0)+1);
+                    }
+                }
+            }
+            tb.innerHTML += `<tr><td>${day}</td><td>${t.cal}</td><td>${t.prot}</td><td>${t.carb}</td><td>${t.fat}</td></tr>`;
+        });
+
+        // Shopping List with Copy Buttons
+        for(let [item, qty] of Object.entries(shopMap)) {
+            const label = qty > 1 ? `${item} (x${qty})` : item;
+            shp.innerHTML += `
+            <div class="shop-item">
+                <span>${label}</span>
+                <button class="shop-btn" onclick="copyItem(this, '${item}')">Copy</button>
+            </div>`;
+        }
+    }
+
+    function copyItem(btn, text) {
+        navigator.clipboard.writeText(text).then(() => {
+            btn.innerText = "Copied!";
+            btn.classList.add('copied');
+            setTimeout(() => { btn.innerText = "Copy"; btn.classList.remove('copied'); }, 2000);
+        });
+    }
+    
+    function clearPlanner() { if(confirm("Clear?")) { weeklyPlan={}; localStorage.setItem('sun_v6_plan', JSON.stringify(weeklyPlan)); renderPlanner(); updateStats(); } }
+
+    init();
+</script>
+</body>
+</html>
