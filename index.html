@@ -15,6 +15,7 @@
   <main>
     <section class="controls">
       <button id="btn-new-recipe">Add Recipe</button>
+      <button id="btn-generate">Generate Plan</button>
       <button id="btn-export">Export JSON</button>
       <input id="file-import" type="file" accept="application/json" hidden>
       <button id="btn-import">Import JSON</button>
@@ -64,7 +65,7 @@
       <h3 id="modal-title">Add Recipe</h3>
       <label>Title <input name="title" required></label>
       <label>Ingredients (one per line) <textarea name="ingredients" rows="6" placeholder="e.g. 1 cup rice"></textarea></label>
-      <label>Tags (comma separated) <input name="tags" placeholder="vegan, dinner, crunchy"></label>
+      <label>Tags (comma separated) <input name="tags" placeholder="vegan, dinner, crunchy"></input></label>
       <label>Texture <select name="texture"><option value="any">any</option><option>crunchy</option><option>smooth</option><option>creamy</option><option>saucy</option><option>chunky</option></select></label>
       <label>Meal type <select name="mealType"><option value="any">any</option><option>breakfast</option><option>lunch</option><option>dinner</option><option>snack</option></select></label>
       <label><input type="checkbox" name="favorite"> Favorite</label>
@@ -75,6 +76,45 @@
       </div>
     </form>
   </div>
+
+  <!-- Generate Plan Modal -->
+  <div id="generate-modal" class="modal hidden" role="dialog" aria-modal="true">
+    <form id="generate-form">
+      <h3>Generate plan</h3>
+      <p>Set the rules for automatic generation</p>
+      <label>Meals per day: <input id="gen-meals-per-day" type="number" min="1" max="6" value="3"></label>
+      <label>Max repeats per recipe per week: <input id="gen-max-repeats" type="number" min="1" value="1"></label>
+      <label><input id="gen-minimize-waste" type="checkbox" checked> Minimize waste (favour recipes that reuse ingredients)</label>
+      <div class="modal-actions">
+        <button id="generate-confirm" type="button">Generate</button>
+        <button id="generate-cancel" type="button">Cancel</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Template for recipe cards (kept for compatibility) -->
+  <template id="recipe-template">
+    <div class="recipe-card">
+      <h3 class="recipe-title"></h3>
+      <div class="recipe-meta"></div>
+      <div class="recipe-ingredients"></div>
+      <div class="recipe-actions">
+        <label>Day: <select class="select-day">
+          <option value="0">Sun</option>
+          <option value="1">Mon</option>
+          <option value="2">Tue</option>
+          <option value="3">Wed</option>
+          <option value="4">Thu</option>
+          <option value="5">Fri</option>
+          <option value="6">Sat</option>
+        </select></label>
+        <button class="btn-add-to-day">Add to day</button>
+        <button class="btn-edit">Edit</button>
+        <button class="btn-fav">♡</button>
+        <button class="btn-delete">Delete</button>
+      </div>
+    </div>
+  </template>
 
   <script src="/js/app.js" defer></script>
 </body>
