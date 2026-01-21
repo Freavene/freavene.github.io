@@ -1,1 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Meal Planner — Prototype</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <header>
+    <h1>Meal Planner</h1>
+    <p class="lead">Plan your week, save locally, and generate a shopping list.</p>
+  </header>
 
+  <main>
+    <section class="controls">
+      <button id="btn-new-recipe">New Recipe</button>
+      <button id="btn-export">Export JSON</button>
+      <input id="file-import" type="file" accept="application/json" hidden>
+      <button id="btn-import">Import JSON</button>
+      <button id="btn-clear">Clear All</button>
+      <button id="btn-print">Print Shopping List</button>
+    </section>
+
+    <section class="layout">
+      <div class="panel" id="panel-week">
+        <h2>This Week</h2>
+        <div id="week-grid" class="week-grid" aria-live="polite"></div>
+      </div>
+
+      <div class="panel" id="panel-recipes">
+        <h2>Recipes</h2>
+        <div id="recipes-list"></div>
+      </div>
+
+      <div class="panel" id="panel-shopping">
+        <h2>Shopping List</h2>
+        <div id="shopping-list"></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- New recipe modal (simple prompt-based fallback for beginners) -->
+  <template id="recipe-template">
+    <div class="recipe-card">
+      <h3 class="recipe-title"></h3>
+      <div class="recipe-ingredients"></div>
+      <div class="recipe-actions">
+        <label>Day: <select class="select-day">
+          <option value="0">Sun</option>
+          <option value="1">Mon</option>
+          <option value="2">Tue</option>
+          <option value="3">Wed</option>
+          <option value="4">Thu</option>
+          <option value="5">Fri</option>
+          <option value="6">Sat</option>
+        </select></label>
+        <button class="btn-add-to-day">Add to day</button>
+        <button class="btn-delete">Delete</button>
+      </div>
+    </div>
+  </template>
+
+  <script src="/js/app.js" defer></script>
+</body>
+</html>
