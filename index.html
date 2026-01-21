@@ -91,9 +91,9 @@
 
 <script>
     // ==========================================
-    // 🔑 METS TA CLÉ USDA ICI (LIGNE 128)
+    // TA CLÉ EST DÉJÀ CONFIGURÉE ICI :
     // ==========================================
-    const API_KEY = 'nBfP2kxAaGObmdHElf8cNiWeWbdB5vdztzoz80se';
+    const API_KEY = 'nBfP2kXAaG0bmdHElfBcNiWeWbdB5vdtzzoZ80se';
     
     let mealPlan = [];
 
@@ -123,7 +123,7 @@
                 resultsDiv.innerHTML = '<div style="padding:10px;">No results found.</div>';
                 return;
             }
-            
+
             // Display results
             data.foods.forEach(food => {
                 let div = document.createElement('div');
@@ -157,13 +157,9 @@
             const data = await response.json();
 
             // USDA stores nutrients in a list with IDs. We need to find them.
-            // ID Mapping: 1008=Kcal, 1003=Prot, 1005=Carb, 1004=Fat, 1087=Calcium, 1089=Iron, 1162=VitC, 1090=Magnesium, 1092=Potassium
-            
+            // Helper function to find nutrient by ID (Legacy or Modern)
             const getNutrient = (id) => {
-                let n = data.foodNutrients.find(x => x.nutrient.number === id || x.nutrient.id === id); // Checks both formats
-                // Sometimes USDA uses different ID formats, this is a simplified search
-                if(!n) n = data.foodNutrients.find(x => x.nutrient.number == id);
-                
+                let n = data.foodNutrients.find(x => x.nutrient.number == id || x.nutrient.id == id);
                 if (n && n.amount) {
                     return (n.amount * weight) / 100;
                 }
@@ -171,78 +167,6 @@
             };
 
             // Retrieve Data (IDs are standard USDA nutrient numbers)
+            // 208/1008=Kcal, 203/1003=Prot, 205/1005=Carb, 204/1004=Fat, 
+            // 301/1087=Calcium, 303/1089=Iron, 401/1162=VitC, 304/1090=Mag, 306/1092=Pot
             mealPlan.push({
-                name: name,
-                weight: weight,
-                cal: getNutrient('208'), // Energy (Kcal) - sometimes 208, sometimes 1008
-                prot: getNutrient('203'), // Protein
-                carb: getNutrient('205'), // Carbs
-                fat: getNutrient('204'), // Fat
-                calcium: getNutrient('301'), // Calcium
-                iron: getNutrient('303'), // Iron
-                vitC: getNutrient('401'), // Vit C
-                mag: getNutrient('304'), // Magnesium
-                pot: getNutrient('306')  // Potassium
-            });
-
-            updateTable();
-            document.getElementById('query').value = "";
-
-        } catch (error) {
-            console.error(error);
-            alert("Error fetching food details.");
-        }
-    }
-
-    // 3. DISPLAY TABLE
-    function updateTable() {
-        const tbody = document.getElementById('mealList');
-        tbody.innerHTML = "";
-        
-        let t = { w:0, cal:0, prot:0, carb:0, fat:0, calci:0, iron:0, vitc:0, mag:0, pot:0 };
-
-        mealPlan.forEach((item, index) => {
-            // Add to totals
-            t.w += item.weight; t.cal += item.cal; t.prot += item.prot; t.carb += item.carb;
-            t.fat += item.fat; t.calci += item.calcium; t.iron += item.iron; t.vitc += item.vitC;
-            t.mag += item.mag; t.pot += item.pot;
-
-            tbody.innerHTML += `
-                <tr>
-                    <td>${item.name}</td>
-                    <td>${item.weight}g</td>
-                    <td>${item.cal.toFixed(0)}</td>
-                    <td>${item.prot.toFixed(1)}</td>
-                    <td>${item.carb.toFixed(1)}</td>
-                    <td>${item.fat.toFixed(1)}</td>
-                    <td>${item.calcium.toFixed(0)}mg</td>
-                    <td>${item.iron.toFixed(1)}mg</td>
-                    <td>${item.vitC.toFixed(1)}mg</td>
-                    <td>${item.mag.toFixed(0)}mg</td>
-                    <td>${item.pot.toFixed(0)}mg</td>
-                    <td><button class="delete-btn" onclick="remove(${index})">X</button></td>
-                </tr>
-            `;
-        });
-
-        // Update Totals
-        document.getElementById('tWeight').innerText = t.w + 'g';
-        document.getElementById('tCal').innerText = t.cal.toFixed(0);
-        document.getElementById('tProt').innerText = t.prot.toFixed(1)+'g';
-        document.getElementById('tCarb').innerText = t.carb.toFixed(1)+'g';
-        document.getElementById('tFat').innerText = t.fat.toFixed(1)+'g';
-        document.getElementById('tCalci').innerText = t.calci.toFixed(0)+'mg';
-        document.getElementById('tIron').innerText = t.iron.toFixed(1)+'mg';
-        document.getElementById('tVitC').innerText = t.vitc.toFixed(1)+'mg';
-        document.getElementById('tMag').innerText = t.mag.toFixed(0)+'mg';
-        document.getElementById('tPot').innerText = t.pot.toFixed(0)+'mg';
-    }
-
-    function remove(index) {
-        mealPlan.splice(index, 1);
-        updateTable();
-    }
-</script>
-
-</body>
-</html>
